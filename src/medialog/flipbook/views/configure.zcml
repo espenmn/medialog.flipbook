@@ -1,0 +1,18 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="medialog.flipbook">
+
+ <!-- -*- extra stuff goes here -*- -->
+
+  <browser:page
+    name="flipbook-view"
+    for="plone.app.contenttypes.interfaces.IFolder"
+    class=".flipbook_view.FlipbookView"
+    template="flipbook_view.pt"
+    permission="zope2.View"
+    layer="medialog.flipbook.interfaces.IMedialogFlipbookLayer"
+    />
+
+</configure>
