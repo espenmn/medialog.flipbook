@@ -37,3 +37,4 @@ report.html
 reports/
 venv/
 # excludes
+src/medialog/flipbook/views/flipbook_view-kopi 2.pt

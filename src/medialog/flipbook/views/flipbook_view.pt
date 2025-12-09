@@ -4,439 +4,246 @@
 	xmlns:i18n="http://xml.zope.org/namespaces/i18n" i18n:domain="medialog.flipbook" metal:use-macro="context/main_template/macros/master">
 
 	<!-- <meta name="viewport" content="width = 1050, user-scalable = no" /> -->
- 
+
 
 	<body>
-		<metal:content-core fill-slot="content-core">
-			<metal:block define-macro="content-core">
+		<metal:content fill-slot="main">
+			<metal:block define-macro="content">
 
-medialog.flipbook
+				<!-- <script type="text/javascript" src="++plone++medialog.flipbook/lib/hash.js"></script> -->
+				<script type="text/javascript" src="++plone++medialog.flipbook/lib/turn.min.js"></script>
+				<!-- <script type="text/javascript" src="++plone++medialog.flipbook/lib/zoom.min.js"></script> -->
+				<!-- <script type="text/javascript" src="++plone++medialog.flipbook/magazine.js"></script> -->
+				<!-- <link rel="stylesheet" href="++plone++medialog.flipbook/magazine.css"> -->
 
-		<!-- <script type="text/javascript" src="../../extras/jquery.min.js"></script> -->
-		<script type="text/javascript" src="++plone++medialog.flipbook/lib/hash.js"></script>
-		<script type="text/javascript" src="++plone++medialog.flipbook/lib/turn.min.js"></script>
-		<script type="text/javascript" src="++plone++medialog.flipbook/lib/zoom.min.js"></script>
-		<script type="text/javascript" src="++plone++medialog.flipbook/magazine.js"></script>
-		<link rel="stylesheet"        href="++plone++medialog.flipbook/magazine.css"> 
-		<!-- <link rel="stylesheet" href="++plone++medialog.flipbook/flipbook.css" /> -->
+			
 
-
-				<div id="canvas">
-					<div class="zoom-icon zoom-icon-in"></div>
-					<div class="magazine-viewport">
-						<div class="container">
-							<div class="magazine">
-								<!-- Next button -->
-								<div ignore="1" class="next-button"></div>
-								<!-- Previous button -->
-								<div ignore="1" class="previous-button"></div>
-							</div>
+				<div id="flipbook-container">
+					<div id="flipbook">
+						<div class="page" tal:repeat="image view/get_images">
+							<img tal:attributes="src string:${image/url}/@@images/image/large;
+                                   alt image/title;
+                                   title image/description" />
 						</div>
-					</div>
-					<div class="thumbnails">
-							<div>
-								<ul tal:define="images context/listFolderContents">
-
-									<li tal:repeat="img images" 
-										class="${img/id}">
-										<img 
-											src="${img/absolute_url}/@@images/image/thumb"
-											class="${img/id}"
-											width="76"
-											height="100" />
-										<span>${img/Title}</span>
-									</li>
-								</ul>
-							</div>
 					</div>
 				</div>
 
+				<div class="controls">
+					<button id="prev-btn">← Previous</button>
+					<span class="page-counter">
+						<span id="current-page">1</span> /						<span id="total-pages">1</span>
+					</span>
+					<button id="next-btn">Next →</button>
+				</div>
 
+				<div class="zoom-overlay" id="zoom-overlay">
+					<span class="zoom-close" id="zoom-close">×</span>
+					<img id="zoomed-image" src="" alt="Zoomed image" />
+				</div>
 
+				<script>
+        $(document).ready(function() {
+            var totalPages = $('#flipbook .page').length;
+            $('#total-pages').text(totalPages);
+            
+            // Initialize turn.js
+            $('#flipbook').turn({
+                width: $('#flipbook').width(),
+                height: $('#flipbook').height(),
+                autoCenter: true,
+                acceleration: true,
+                elevation: 50,
+                gradients: true,
+                when: {
+                    turned: function(event, page) {
+                        $('#current-page').text(page);
+                        updateButtons(page, totalPages);
+                    }
+                }
+            });
+            
+            // Update button states
+            function updateButtons(page, total) {
+                $('#prev-btn').prop('disabled', page === 1);
+                $('#next-btn').prop('disabled', page === total);
+            }
+            
+            // Navigation buttons
+            $('#prev-btn').click(function() {
+                $('#flipbook').turn('previous');
+            });
+            
+            $('#next-btn').click(function() {
+                $('#flipbook').turn('next');
+            });
+            
+            // Keyboard navigation
+            $(document).keydown(function(e) {
+                if (e.keyCode === 37) { // Left arrow
+                    $('#flipbook').turn('previous');
+                } else if (e.keyCode === 39) { // Right arrow
+                    $('#flipbook').turn('next');
+                }
+            });
+            
+            // Zoom functionality
+            $('#flipbook .page img').click(function(e) {
+                e.stopPropagation();
+                var imgSrc = $(this).attr('src').replace('/large', '?full');
+                $('#zoomed-image').attr('src', imgSrc);
+                $('#zoom-overlay').css('display', 'flex');
+            });
+            
+			$('#zoom-overlay, #zoom-close, #zoomed-image').click(function() {
+                $('#zoom-overlay').hide();
+            });
+            
+            $('#zoomed-image').click(function(e) {
+                e.stopPropagation();
+            });
+            
+            // Initialize button state
+            updateButtons(1, totalPages);
+            
+            // Handle window resize
+            $(window).resize(function() {
+                var flipbook = $('#flipbook');
+                flipbook.turn('size', flipbook.parent().width() * 0.9, 
+                              flipbook.parent().height() * 0.85);
+            });
+        });
+				</script>
 
+					<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #111;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #flipbook-container {
+            width: 1200px;
+            height: 900px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            xposition: absolute;
+			xleft: 0;
+			xright: 0;
+        }
+        
+        #flipbook {
+            width: 90%;
+            height: 85%;
+            <!-- box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8); -->
+        }
+        
+        #flipbook .page {
+            display: flex;
+            xalign-items: center;
+            justify-content: center;
+            overflow: hidden;
 
-
-
-
-
-
-					<script type="text/javascript">
-
-function loadApp() {
-
- 	$('#canvas').fadeIn(1000);
-
- 	var flipbook = $('.magazine');
-
- 	// Check if the CSS was already loaded
-	
-	if (flipbook.width()==0 || flipbook.height()==0) {
-		setTimeout(loadApp, 10);
-		return;
-	}
-	
-	// Create the flipbook
-
-	flipbook.turn({
-			
-			// Magazine width
-			width: 922,
-			// Magazine height
-			height: 600,
-			// Duration in millisecond
-			duration: 1000,
-			// Hardware acceleration
-			acceleration: true,
-
-			// Enables gradients
-			gradients: true,
-			
-			// Auto center this flipbook
-			autoCenter: true,
-
-			// Elevation from the edge of the flipbook when turning a page
-			elevation: 50,
-
-			// The number of pages
-			pages: 5,
-
-			// Events
-			when: {
-				turning: function(event, page, view) {
-					
-					var book = $(this),
-					currentPage = book.turn('page'),
-					pages = book.turn('pages');
-			
-					// Update the current URI
-
-					Hash.go('page/' + page).update();
-
-					// Show and hide navigation buttons
-
-					disableControls(page);
-					
-
-					$('.thumbnails .page-'+currentPage).
-						parent().
-						removeClass('current');
-
-					$('.thumbnails .page-'+page).
-						parent().
-						addClass('current');
-
-
-
-				},
-
-				turned: function(event, page, view) {
-
-					disableControls(page);
-
-					$(this).turn('center');
-
-					if (page==1) { 
-						$(this).turn('peel', 'br');
-					}
-
-				},
-
-				missing: function (event, pages) {
-
-					// Add pages that aren't in the magazine
-
-					for (var i = 0; i < pages.length; i++)
-						addPage(pages[i], $(this));
-
-				}
-			}
-
-	});
-
-	// Zoom.js
-
-	$('.magazine-viewport').zoom({
-		flipbook: $('.magazine'),
-
-		max: function() { 			
-			return largeMagazineWidth()/$('.magazine').width();
-		}, 
-
-		when: {
-			swipeLeft: function() {
-				$(this).zoom('flipbook').turn('next');
-			},
-
-			swipeRight: function() {				
-				$(this).zoom('flipbook').turn('previous');
-			},
-
-			resize: function(event, scale, page, pageElement) {
-
-				if (scale==1)
-					loadSmallPage(page, pageElement);
-				else
-					loadLargePage(page, pageElement);
-
-			},
-
-			zoomIn: function () {
-
-				$('.thumbnails').hide();
-				$('.made').hide();
-				$('.magazine').removeClass('animated').addClass('zoom-in');
-				$('.zoom-icon').removeClass('zoom-icon-in').addClass('zoom-icon-out');
-				
-				if (!window.escTip && !$.isTouch) {
-					escTip = true;
-
-					$('<div />', {'class': 'exit-message'}).
-						html('<div>Press ESC to exit</div>').
-							appendTo($('body')).
-							delay(2000).
-							animate({opacity:0}, 500, function() {
-								$(this).remove();
-							});
-				}
-			},
-
-			zoomOut: function () {
-
-				$('.exit-message').hide();
-				$('.thumbnails').fadeIn();
-				$('.made').fadeIn();
-				$('.zoom-icon').removeClass('zoom-icon-out').addClass('zoom-icon-in');
-
-				setTimeout(function(){
-					$('.magazine').addClass('animated').removeClass('zoom-in');
-					resizeViewport();
-				}, 0);
-
-			}
 		}
-	});
-
-	// Zoom event
-
-	if ($.isTouch)
-		$('.magazine-viewport').on('zoom.doubleTap', zoomTo);
-	else
-		$('.magazine-viewport').on('zoom.tap', zoomTo);
-
-
-	// Using arrow keys to turn the page
-
-	$(document).on('keydown',function(e){
-
-		var previous = 37, next = 39, esc = 27;
-
-		switch (e.keyCode) {
-			case previous:
-
-				// left arrow
-				$('.magazine').turn('previous');
-				e.preventDefault();
-
-			break;
-			case next:
-
-				//right arrow
-				$('.magazine').turn('next');
-				e.preventDefault();
-
-			break;
-			case esc:
-				
-				$('.magazine-viewport').zoom('zoomOut');	
-				e.preventDefault();
-
-			break;
-		}
-	});
-
-	// URIs - Format #/page/1 
-
-	Hash.on('^page\/([0-9]*)$', {
-		yep: function(path, parts) {
-			var page = parts[1];
-
-			if (page!==undefined) {
-				if ($('.magazine').turn('is'))
-					$('.magazine').turn('page', page);
-			}
-
-		},
-		nop: function(path) {
-
-			if ($('.magazine').turn('is'))
-				$('.magazine').turn('page', 1);
-		}
-	});
-
-
-	$(window).on('resize',function() {
-		resizeViewport();
-	}).on('orientationchange', function() {
-		resizeViewport();
-	});
-
-	// Events for thumbnails
-
-	$('.thumbnails').on('click', function(event) {
-		
-		var page;
-
-		if (event.target && (page=/page-([0-9]+)/.exec($(event.target).attr('class'))) ) {
-		
-			$('.magazine').turn('page', page[1]);
-		}
-	});
-
-	$('.thumbnails li').
-		on($.mouseEvents.over, function() {
-			
-			$(this).addClass('thumb-hover');
-
-		}).on($.mouseEvents.out, function() {
-			
-			$(this).removeClass('thumb-hover');
-
-		});
-
-	if ($.isTouch) {
-	
-		$('.thumbnails').
-			addClass('thumbanils-touch').
-			on($.mouseEvents.move, function(event) {
-				event.preventDefault();
-			});
-
-	} else {
-
-		$('.thumbnails ul').on('mouseover', function() {
-
-			$('.thumbnails').addClass('thumbnails-hover');
-
-		}).on('mousedown',function() {
-
-			return false;
-
-		}).on('mouseout',function() {
-
-			$('.thumbnails').removeClass('thumbnails-hover');
-
-		});
-
-	}
-
-
-	// Regions
-
-	if ($.isTouch) {
-		$('.magazine').on('touchstart', regionClick);
-	} else {
-		$('.magazine').on('click', regionClick);
-	}
-
-	// Events for the next button
-
-	$('.next-button').on($.mouseEvents.over, function() {
-		
-		$(this).addClass('next-button-hover');
-
-	}).on($.mouseEvents.out, function() {
-		
-		$(this).removeClass('next-button-hover');
-
-	}).on($.mouseEvents.down, function() {
-		
-		$(this).addClass('next-button-down');
-
-	}).on($.mouseEvents.up, function() {
-		
-		$(this).removeClass('next-button-down');
-
-	}).on('click', function() {
-		
-		$('.magazine').turn('next');
-
-	});
-
-	// Events for the next button
-	
-	$('.previous-button').on($.mouseEvents.over, function() {
-		
-		$(this).addClass('previous-button-hover');
-
-	}).on($.mouseEvents.out, function() {
-		
-		$(this).removeClass('previous-button-hover');
-
-	}).on($.mouseEvents.down, function() {
-		
-		$(this).addClass('previous-button-down');
-
-	}).on($.mouseEvents.up, function() {
-		
-		$(this).removeClass('previous-button-down');
-
-	}).on('click', function() {
-		
-		$('.magazine').turn('previous');
-
-	});
-
-
-	resizeViewport();
-
-	$('.magazine').addClass('animated');
-
-}
-
-// Zoom icon
-
- $('.zoom-icon').on('mouseover', function() { 
- 	
- 	if ($(this).hasClass('zoom-icon-in'))
- 		$(this).addClass('zoom-icon-in-hover');
-
- 	if ($(this).hasClass('zoom-icon-out'))
- 		$(this).addClass('zoom-icon-out-hover');
- 
- }).on('mouseout', function() { 
- 	
- 	 if ($(this).hasClass('zoom-icon-in'))
- 		$(this).removeClass('zoom-icon-in-hover');
- 	
- 	if ($(this).hasClass('zoom-icon-out'))
- 		$(this).removeClass('zoom-icon-out-hover');
-
- }).on('click', function() {
-
- 	if ($(this).hasClass('zoom-icon-in'))
- 		$('.magazine-viewport').zoom('zoomIn');
- 	else if ($(this).hasClass('zoom-icon-out'))	
-		$('.magazine-viewport').zoom('zoomOut');
-
- });
-
- $('#canvas').hide();
-
-// Load turn.js
-
-loadApp()
-
-</script>
-
-
-
-
-
-
+		.page-wrapper {
+			box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
+        }
+        
+        #flipbook .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: zoom-in;
+			box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
+        }
+        
+        #flipbook .page img.zoomed {
+            cursor: zoom-out;
+            cursor: move;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .controls button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #45a049;
+        }
+        
+        .controls button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .page-counter {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .zoom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            cursor: zoom-out;
+        }
+        
+        .zoom-overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+        
+        .zoom-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            z-index: 2001;
+        }
+				</style>
 
 
 			</metal:block>
-		</metal:content-core>
+		</metal:content>
 	</body>
 </html>
 
