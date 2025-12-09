@@ -4,11 +4,24 @@ import tempfile
 from pdf2image import convert_from_path
 
 from plone import api
-from zope.component.hooks import getSite
+# from zope.component.hooks import getSite
+# from zope.globalrequest import getRequest
+# from plone.namedfile.file import NamedBlobFile
+from plone.namedfile.file import NamedBlobImage
+from io import BytesIO
+
+
 
 
 def handler(obj, event):
     """ Event handler -  a PDF file is added, convert each page to an image."""
+    
+    if obj.aq_parent.layout is None:
+        return
+
+    # Only run if URL contains flipbook-view
+    if "flipbook-view" not in obj.aq_parent.layout:
+        return
     
     # Only run for PDF files
     if not hasattr(obj, 'file'):
@@ -17,6 +30,7 @@ def handler(obj, event):
         return
 
     filename = obj.file.filename.lower()
+    # TO DO, maybe check for mime type instead of extension
     if not filename.endswith(".pdf"):
         return
 
@@ -28,7 +42,7 @@ def handler(obj, event):
 
     # Convert PDF -> list of PIL images
     try:
-        images = convert_from_path(pdf_path, dpi=200)
+        images = convert_from_path(pdf_path, dpi=250)
     except Exception as e:
         import logging
         logger = logging.getLogger("your.package")
@@ -44,21 +58,20 @@ def handler(obj, event):
     base_id = os.path.splitext(obj.getId())[0]
 
     for index, pil_image in enumerate(images, start=1):
-        image_id = f"{base_id}-page-{index}.png"
+        image_id = f"{base_id}-page-{index}.jpg"
 
-        # Convert PIL image to raw bytes
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as img_tmp:
-            pil_image.save(img_tmp, format="PNG")
-            img_tmp.flush()
-            image_data = img_tmp.read()
+        # Convert PIL Image → JPG bytes
+        buf = BytesIO()
+        pil_image.save(buf, format="JPEG")
+        image_bytes = buf.getvalue()
 
-        # Create the Image item in the same folder
         api.content.create(
             container=parent,
             type="Image",
             id=image_id,
             title=f"{obj.Title()} — Page {index}",
-            image=image_data,
+            image=NamedBlobImage(
+                data=image_bytes,
+                filename=f"{base_id}-page-{index}.jpg"
+            ),
         )
-
-        os.remove(img_tmp.name)

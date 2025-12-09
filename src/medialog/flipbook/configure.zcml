@@ -12,11 +12,12 @@
     Better import explicit packages or configurations ;)
   -->
   <!--<includeDependencies package="." />-->
-
   <!-- has to be loaded before permissions are used, so keep above views aso. -->
   <include file="permissions.zcml" />
-
   <include package=".browser" />
+  <include package=".subscribers" />
+  <include package=".views" />
+
 
   <genericsetup:registerProfile
       name="default"
@@ -41,10 +42,6 @@
       name="medialog.flipbook-hiddenprofiles"
       />
 
-  <!-- -*- extra stuff goes here -*- -->
-
-  <include package=".subscribers" />
-
-  <include package=".views" />
+  
 
 </configure>

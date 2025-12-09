@@ -2,9 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     i18n_domain="medialog.flipbook">
 
- <!-- -*- extra stuff goes here -*- -->
-
-  <subscriber for="plone.dexterity.interfaces.IDexterityContainer"
+    <subscriber for="plone.dexterity.interfaces.IDexterityContent
                    zope.lifecycleevent.interfaces.IObjectAddedEvent"
               handler=".pdf_added_to_folder.handler"
               />
