@@ -18,12 +18,12 @@ def handler(obj, event):
     
         
     # Only run for PDF files
-    if not hasattr(obj, 'file'):
+    if not hasattr(obj, 'file') or not hasattr(obj, 'layout'):
         return
     if not obj.file:
         return
     
-    if hasattr(obj, 'layout') and obj.aq_parent.layout is None:
+    if obj.aq_parent.layout is None:
         return
 
     # Only run if URL contains flipbook-view
