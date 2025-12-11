@@ -23,7 +23,7 @@ def handler(obj, event):
     if not obj.file:
         return
     
-    if obj.aq_parent.layout is None:
+    if hasattr(obj, 'layout') and obj.aq_parent.layout is None:
         return
 
     # Only run if URL contains flipbook-view
