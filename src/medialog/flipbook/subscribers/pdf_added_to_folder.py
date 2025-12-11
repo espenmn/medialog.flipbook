@@ -16,18 +16,20 @@ from io import BytesIO
 def handler(obj, event):
     """ Event handler -  a PDF file is added, convert each page to an image."""
     
+        
+    # Only run for PDF files
+    if not hasattr(obj, 'file'):
+        return
+    if not obj.file:
+        return
+    
     if obj.aq_parent.layout is None:
         return
 
     # Only run if URL contains flipbook-view
     if "flipbook-view" not in obj.aq_parent.layout:
         return
-    
-    # Only run for PDF files
-    if not hasattr(obj, 'file'):
-        return
-    if not obj.file:
-        return
+
 
     filename = obj.file.filename.lower()
     # TO DO, maybe check for mime type instead of extension

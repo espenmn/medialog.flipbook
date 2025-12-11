@@ -31,18 +31,15 @@
 medialog.flipbook
 =================
 
-PDF flipbook viewer for Plone 6
+PDF flipbook viewer for Plone 6. Please check licence of turn.js before use.
+
 
 Features
 --------
 
 - Turn.js add-on for Plone
 
-
-Examples
---------
-
-This add-on can be seen in action at the following sites: 
+ 
 
 
 
@@ -95,8 +92,7 @@ Contribute
 Support
 -------
 
-If you are having issues, please let us know.
-We have a mailing list located at: project@example.com
+If you are having issues, please let me know. 
 
 
 License
