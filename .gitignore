@@ -14,7 +14,6 @@ develop-eggs/
 eggs/
 htmlcov/
 include/
-lib/
 local/
 node_modules/
 parts/
