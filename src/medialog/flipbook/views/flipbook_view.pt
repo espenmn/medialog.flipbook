@@ -49,162 +49,111 @@
 					<img id="zoomed-image" src="" alt="Zoomed image" />
 				</div>
 
-				<script>
-        $(document).ready(function() {
-            var totalPages = $('#flipbook .page').length;
-            $('#total-pages').text(totalPages);
-            
-            // Initialize turn.js
-            $('#flipbook').turn({
-                width: $('#flipbook').width(),
-                height: $('#flipbook').height(),
-                autoCenter: true,
-                acceleration: true,
-                elevation: 50,
-                gradients: true,
-                when: {
-                    turned: function(event, page) {
-                        $('#current-page').text(page);
-                        updateButtons(page, totalPages);
-                    }
-                }
-            });
-            
-            // Update button states
-            function updateButtons(page, total) {
-                $('#prev-btn').prop('disabled', page === 1);
-                $('#next-btn').prop('disabled', page === total);
+<script>
+$(document).ready(function() {
+    var $flipbook = $('#flipbook');
+    var totalPages = $flipbook.find('.page').length;
+    $('#total-pages').text(totalPages);
+
+    // Initialize turn.js
+    $flipbook.turn({
+        width: $flipbook.width(),
+        height: $flipbook.height(),
+        autoCenter: true,
+        acceleration: true,
+        elevation: 50,
+        gradients: true,
+        when: {
+            turned: function(event, page) {
+                $('#current-page').text(page);
+                updateButtons(page, totalPages);
+                createPagination(totalPages, page); // Update pagination on page turn
             }
-            
-            // Navigation buttons
-            $('#prev-btn').click(function() {
-                $('#flipbook').turn('previous');
-            });
-            
-            $('#next-btn').click(function() {
-                $('#flipbook').turn('next');
-            });
-            
-            // Keyboard navigation
-            $(document).keydown(function(e) {
-                if (e.keyCode === 37) { // Left arrow
-                    $('#flipbook').turn('previous');
-                } else if (e.keyCode === 39) { // Right arrow
-                    $('#flipbook').turn('next');
-                }
-            });
+        }
+    });
 
-            // Create pagination buttons
-            function createPagination(total) {
-                var pagination = $('#pagination');
-                pagination.empty(); // clear existing buttons
-                for (var i = 1; i <= total; i++) {
-                    var btn = $('<button>')
-                        .addClass('page-btn')
-                        .text(i)
-                        .data('page', i)
-                        .click(function() {
-                            var page = $(this).data('page');
-                            $('#flipbook').turn('page', page);
-                        });
-                    pagination.append(btn);
-                }
-            }
+    // Update Next/Prev buttons
+    function updateButtons(page, total) {
+        $('#prev-btn').prop('disabled', page === 1);
+        $('#next-btn').prop('disabled', page === total);
+    }
 
-            function createPagination(total, current, maxVisible = 9) {
-                var pagination = $('#pagination');
-                pagination.empty();
+    // Navigation buttons
+    $('#prev-btn').click(function() {
+        $flipbook.turn('previous');
+    });
 
-                if (total <= maxVisible) {
-                    // Small number of pages, just show all
-                    for (var i = 1; i <= total; i++) {
-                        addPageButton(i, current);
-                    }
-                } else {
-                    // Always show first page
-                    addPageButton(1, current);
+    $('#next-btn').click(function() {
+        $flipbook.turn('next');
+    });
 
-                    // Calculate sliding window
-                    var start = Math.max(2, current - Math.floor((maxVisible - 3)/2));
-                    var end = Math.min(total - 1, current + Math.floor((maxVisible - 3)/2));
+    // Keyboard navigation
+    $(document).keydown(function(e) {
+        if (e.keyCode === 37) $flipbook.turn('previous'); // Left
+        if (e.keyCode === 39) $flipbook.turn('next');     // Right
+    });
 
-                    // Ellipsis if start > 2
-                    if (start > 2) pagination.append('<span class="ellipsis">...</span>');
+    // Dynamic pagination for large books
+    function createPagination(total, current, maxVisible = 9) {
+        var pagination = $('#pagination');
+        pagination.empty();
 
-                    for (var i = start; i <= end; i++) {
-                        addPageButton(i, current);
-                    }
+        function addPageButton(page) {
+            var btn = $('<button>')
+                .addClass('page-btn')
+                .text(page)
+                .data('page', page)
+                .click(function() {
+                    $flipbook.turn('page', $(this).data('page'));
+                });
+            if (page === current) btn.addClass('active');
+            pagination.append(btn);
+        }
 
-                    // Ellipsis if end < total - 1
-                    if (end < total - 1) pagination.append('<span class="ellipsis">...</span>');
+        if (total <= maxVisible) {
+            for (var i = 1; i <= total; i++) addPageButton(i);
+        } else {
+            addPageButton(1); // first page
+            var start = Math.max(2, current - Math.floor((maxVisible - 3)/2));
+            var end = Math.min(total - 1, current + Math.floor((maxVisible - 3)/2));
 
-                    // Always show last page
-                    addPageButton(total, current);
-                }
-            }
+            if (start > 2) pagination.append('<span class="ellipsis">...</span>');
 
-            function addPageButton(page, current) {
-                var btn = $('<button>')
-                    .addClass('page-btn')
-                    .text(page)
-                    .data('page', page)
-                    .click(function() {
-                        var pageNum = $(this).data('page');
-                        $('#flipbook').turn('page', pageNum);
-                    });
-                if (page === current) btn.addClass('active');
-                $('#pagination').append(btn);
-            }
+            for (var i = start; i <= end; i++) addPageButton(i);
 
-            // Update pagination whenever page changes
-            $('#flipbook').bind('turned', function(event, page) {
-                createPagination($('#flipbook .page').length, page);
-            });
+            if (end < total - 1) pagination.append('<span class="ellipsis">...</span>');
 
-            // Update active page styling
-            function updatePagination(page) {
-                $('#pagination .page-btn').removeClass('active');
-                $('#pagination .page-btn').filter(function() {
-                    return $(this).data('page') === page;
-                }).addClass('active');
-            }
+            addPageButton(total); // last page
+        }
+    }
 
-            // Call after initializing flipbook
-            createPagination(totalPages);
-            updatePagination(1);
+    // Initial setup
+    createPagination(totalPages, 1);
+    updateButtons(1, totalPages);
 
-            // Update active page on turn
-            $('#flipbook').bind('turned', function(event, page) {
-                updatePagination(page);
-            });
-            
-            // Zoom functionality
-            $('#flipbook .page img').click(function(e) {
-                e.stopPropagation();
-                var imgSrc = $(this).attr('src').replace('/large', '?full');
-                $('#zoomed-image').attr('src', imgSrc);
-                $('#zoom-overlay').css('display', 'flex');
-            });
-            
-			$('#zoom-overlay, #zoom-close, #zoomed-image').click(function() {
-                $('#zoom-overlay').hide();
-            });
-            
-            $('#zoomed-image').click(function(e) {
-                e.stopPropagation();
-            });
-            
-            // Initialize button state
-            updateButtons(1, totalPages);
-            
-            // Handle window resize
-            $(window).resize(function() {
-                var flipbook = $('#flipbook');
-                flipbook.turn('size', flipbook.parent().width() * 0.9, 
-                              flipbook.parent().height() * 0.85);
-            });
-        });
-				</script>
+    // Zoom functionality (unchanged)
+    $('#flipbook .page img').click(function(e) {
+        e.stopPropagation();
+        var imgSrc = $(this).attr('src').replace('/large', '?full');
+        $('#zoomed-image').attr('src', imgSrc);
+        $('#zoom-overlay').css('display', 'flex');
+    });
+
+    $('#zoom-overlay, #zoom-close, #zoomed-image').click(function() {
+        $('#zoom-overlay').hide();
+    });
+
+    $('#zoomed-image').click(function(e) {
+        e.stopPropagation();
+    });
+
+    // Resize handling
+    $(window).resize(function() {
+        $flipbook.turn('size', $flipbook.parent().width() * 0.9, 
+                              $flipbook.parent().height() * 0.85);
+    });
+});
+</script>
 
 					<style>
         * {
@@ -341,8 +290,8 @@
             gap: 5px;
             align-items: center;
             z-index: 1000;
-            overflow: hidden;
             white-space: nowrap;
+            z-index: 15
         }
 
         .pagination .page-btn {
