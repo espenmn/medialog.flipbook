@@ -31,10 +31,18 @@
 				<div class="controls">
 					<button id="prev-btn">← Previous</button>
 					<span class="page-counter">
-						<span id="current-page">1</span> /						<span id="total-pages">1</span>
+						<span id="current-page">1</span> / <span id="total-pages">1</span>
 					</span>
 					<button id="next-btn">Next →</button>
-				</div>
+                    
+                  
+                
+                    
+				</div>   <div class="pagination" id="pagination"></div>
+                  
+                
+
+                
 
 				<div class="zoom-overlay" id="zoom-overlay">
 					<span class="zoom-close" id="zoom-close">×</span>
@@ -84,6 +92,40 @@
                 } else if (e.keyCode === 39) { // Right arrow
                     $('#flipbook').turn('next');
                 }
+            });
+
+            // Create pagination buttons
+            function createPagination(total) {
+                var pagination = $('#pagination');
+                pagination.empty(); // clear existing buttons
+                for (var i = 1; i <= total; i++) {
+                    var btn = $('<button>')
+                        .addClass('page-btn')
+                        .text(i)
+                        .data('page', i)
+                        .click(function() {
+                            var page = $(this).data('page');
+                            $('#flipbook').turn('page', page);
+                        });
+                    pagination.append(btn);
+                }
+            }
+
+            // Update active page styling
+            function updatePagination(page) {
+                $('#pagination .page-btn').removeClass('active');
+                $('#pagination .page-btn').filter(function() {
+                    return $(this).data('page') === page;
+                }).addClass('active');
+            }
+
+            // Call after initializing flipbook
+            createPagination(totalPages);
+            updatePagination(1);
+
+            // Update active page on turn
+            $('#flipbook').bind('turned', function(event, page) {
+                updatePagination(page);
             });
             
             // Zoom functionality
@@ -174,8 +216,8 @@
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
-            padding: 15px 30px;
-            border-radius: 30px;
+            padding: 9px 12px;
+            border-radius: 15px;
             display: flex;
             gap: 15px;
             align-items: center;
@@ -239,6 +281,38 @@
             cursor: pointer;
             z-index: 2001;
         }
+
+        .pagination {
+            position: fixed;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            z-index: 1000;
+        }
+
+        .pagination .page-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .pagination .page-btn:hover {
+            background: #555;
+        }
+
+        .pagination .page-btn.active {
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
 				</style>
 
 
