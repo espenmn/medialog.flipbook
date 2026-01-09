@@ -111,6 +111,56 @@
                 }
             }
 
+            function createPagination(total, current, maxVisible = 9) {
+                var pagination = $('#pagination');
+                pagination.empty();
+
+                if (total <= maxVisible) {
+                    // Small number of pages, just show all
+                    for (var i = 1; i <= total; i++) {
+                        addPageButton(i, current);
+                    }
+                } else {
+                    // Always show first page
+                    addPageButton(1, current);
+
+                    // Calculate sliding window
+                    var start = Math.max(2, current - Math.floor((maxVisible - 3)/2));
+                    var end = Math.min(total - 1, current + Math.floor((maxVisible - 3)/2));
+
+                    // Ellipsis if start > 2
+                    if (start > 2) pagination.append('<span class="ellipsis">...</span>');
+
+                    for (var i = start; i <= end; i++) {
+                        addPageButton(i, current);
+                    }
+
+                    // Ellipsis if end < total - 1
+                    if (end < total - 1) pagination.append('<span class="ellipsis">...</span>');
+
+                    // Always show last page
+                    addPageButton(total, current);
+                }
+            }
+
+            function addPageButton(page, current) {
+                var btn = $('<button>')
+                    .addClass('page-btn')
+                    .text(page)
+                    .data('page', page)
+                    .click(function() {
+                        var pageNum = $(this).data('page');
+                        $('#flipbook').turn('page', pageNum);
+                    });
+                if (page === current) btn.addClass('active');
+                $('#pagination').append(btn);
+            }
+
+            // Update pagination whenever page changes
+            $('#flipbook').bind('turned', function(event, page) {
+                createPagination($('#flipbook .page').length, page);
+            });
+
             // Update active page styling
             function updatePagination(page) {
                 $('#pagination .page-btn').removeClass('active');
@@ -284,19 +334,22 @@
 
         .pagination {
             position: fixed;
-            bottom: 2px;
+            bottom: 4px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 5px;
+            align-items: center;
             z-index: 1000;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .pagination .page-btn {
             background: #333;
             color: white;
             border: none;
-            padding: 4px 6px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
@@ -312,6 +365,13 @@
             color: white;
             font-weight: bold;
         }
+
+        .pagination .ellipsis {
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
 
 				</style>
 
