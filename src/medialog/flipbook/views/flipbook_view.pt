@@ -168,10 +168,18 @@ $(document).ready(function() {
             font-family: Arial, sans-serif;
             overflow: hidden;
         }
+        #above-portlets-wrapper,
+        #above-content-wrapper, 
+        #hero { display: none}
+
+        #mycontainer, article#content {
+            padding: 0;
+        }
         
         #flipbook-container {
             width: 1200px;
             height: 900px;
+            max-height: 80vh;   
             display: flex;
             align-items: center;
             justify-content: center;
