@@ -179,7 +179,8 @@ $(document).ready(function() {
         #flipbook-container {
             width: 1200px;
             height: 900px;
-            max-height: 80vh;   
+            max-height: 80vh; 
+            max-width: 106.666667vh;   
             display: flex;
             align-items: center;
             justify-content: center;
